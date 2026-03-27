@@ -13,6 +13,10 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Flutter Demo',
       theme: ThemeData(
+
+
+
+
         // This is the theme of your application.
         //
         // TRY THIS: Try running your application with "flutter run". You'll see
@@ -69,53 +73,77 @@ class _MyHomePageState extends State<MyHomePage> {
 
   @override
   Widget build(BuildContext context) {
-    // This method is rerun every time setState is called, for instance as done
-    // by the _incrementCounter method above.
-    //
-    // The Flutter framework has been optimized to make rerunning build methods
-    // fast, so that you can just rebuild anything that needs updating rather
-    // than having to individually change instances of widgets.
     return Scaffold(
-      appBar: AppBar(
-        // TRY THIS: Try changing the color here to a specific color (to
-        // Colors.amber, perhaps?) and trigger a hot reload to see the AppBar
-        // change color while the other colors stay the same.
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-        // Here we take the value from the MyHomePage object that was created by
-        // the App.build method, and use it to set our appbar title.
-        title: Text(widget.title),
-      ),
-      body: Center(
-        // Center is a layout widget. It takes a single child and positions it
-        // in the middle of the parent.
-        child: Column(
-          // Column is also a layout widget. It takes a list of children and
-          // arranges them vertically. By default, it sizes itself to fit its
-          // children horizontally, and tries to be as tall as its parent.
-          //
-          // Column has various properties to control how it sizes itself and
-          // how it positions its children. Here we use mainAxisAlignment to
-          // center the children vertically; the main axis here is the vertical
-          // axis because Columns are vertical (the cross axis would be
-          // horizontal).
-          //
-          // TRY THIS: Invoke "debug painting" (choose the "Toggle Debug Paint"
-          // action in the IDE, or press "p" in the console), to see the
-          // wireframe for each widget.
-          mainAxisAlignment: .center,
-          children: [
-            const Text('You have pushed the button this many times:'),
-            Text(
-              '$_counter',
-              style: Theme.of(context).textTheme.headlineMedium,
+      body: Column(
+        children: [
+          // Display Section
+          Expanded(
+            child: Container(
+              alignment: Alignment.bottomRight,
+              padding: const EdgeInsets.all(24),
+              child: Text(
+                display,
+                style: const TextStyle(fontSize: 80, fontWeight: FontWeight.w300, color: Colors.white),
+              ),
             ),
-          ],
-        ),
+          ),
+          // Buttons Section
+          Column(
+            children: [
+              Row(children: [
+                buildButton('AC', Colors.grey, textColor: Colors.black),
+                buildButton('+/-', Colors.grey, textColor: Colors.black),
+                buildButton('%', Colors.grey, textColor: Colors.black),
+                buildButton('÷', Colors.orange),
+              ]),
+              Row(children: [
+                buildButton('7', Colors.white12),
+                buildButton('8', Colors.white12),
+                buildButton('9', Colors.white12),
+                buildButton('×', Colors.orange),
+              ]),
+              Row(children: [
+                buildButton('4', Colors.white12),
+                buildButton('5', Colors.white12),
+                buildButton('6', Colors.white12),
+                buildButton('-', Colors.orange),
+              ]),
+              Row(children: [
+                buildButton('1', Colors.white12),
+                buildButton('2', Colors.white12),
+                buildButton('3', Colors.white12),
+                buildButton('+', Colors.orange),
+              ]),
+              Row(children: [
+                buildButton('0', Colors.white12),
+                buildButton('.', Colors.white12),
+                buildButton('=', Colors.orange),
+              ]),
+              const SizedBox(height: 20),
+            ],
+          ),
+        ],
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
-        tooltip: 'Increment',
-        child: const Icon(Icons.add),
+    );
+  }
+  String display = '0';
+
+  Widget buildButton(String text, Color color, {Color textColor = Colors.white}) {
+    return Expanded(
+      child: Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: ElevatedButton(
+          style: ElevatedButton.styleFrom(
+            shape: const CircleBorder(),
+            padding: const EdgeInsets.all(24),
+            backgroundColor: color,
+          ),
+          onPressed: () {}, // Logic goes here
+          child: Text(
+            text,
+            style: TextStyle(fontSize: 28, color: textColor, fontWeight: FontWeight.bold),
+          ),
+        ),
       ),
     );
   }
