@@ -1,12 +1,6 @@
 import 'package:flutter/material.dart';
-
-class UserData {
-  final String name;
-  final String age;
-  final String phone;
-
-  UserData({required this.name, required this.age, required this.phone});
-}
+import 'list_view_detail.dart';
+import '../models/user_model.dart';
 
 class ListViewInsertion extends StatefulWidget {
   const ListViewInsertion({super.key});
@@ -31,7 +25,6 @@ class _ListViewInsertionState extends State<ListViewInsertion> {
       setState(() {
         _userList.add(UserData(name: name, age: age, phone: phone));
       });
-      // Clear fields after adding
       _nameController.clear();
       _ageController.clear();
       _phoneController.clear();
@@ -39,6 +32,23 @@ class _ListViewInsertionState extends State<ListViewInsertion> {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Please fill all fields')),
       );
+    }
+  }
+
+  void _navigateToDetail(int index) async {
+    // Navigate to detail page and wait for the updated user object
+    final updatedUser = await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => ListViewDetail(user: _userList[index]),
+      ),
+    );
+
+    // If we got an updated user back, refresh the list
+    if (updatedUser != null && updatedUser is UserData) {
+      setState(() {
+        _userList[index] = updatedUser;
+      });
     }
   }
 
@@ -54,14 +64,13 @@ class _ListViewInsertionState extends State<ListViewInsertion> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Data Entry List'),
+        title: const Text('Data Entry & List'),
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
-            // Input Fields
             TextField(
               controller: _nameController,
               decoration: const InputDecoration(
@@ -91,8 +100,6 @@ class _ListViewInsertionState extends State<ListViewInsertion> {
               keyboardType: TextInputType.phone,
             ),
             const SizedBox(height: 16),
-            
-            // Add Button
             SizedBox(
               width: double.infinity,
               height: 50,
@@ -107,10 +114,7 @@ class _ListViewInsertionState extends State<ListViewInsertion> {
                 ),
               ),
             ),
-            
             const Divider(height: 40),
-            
-            // Results List
             Expanded(
               child: _userList.isEmpty
                   ? const Center(child: Text('No entries found.'))
@@ -122,6 +126,7 @@ class _ListViewInsertionState extends State<ListViewInsertion> {
                           elevation: 2,
                           margin: const EdgeInsets.only(bottom: 12),
                           child: ListTile(
+                            onTap: () => _navigateToDetail(index), // Navigate on click
                             leading: CircleAvatar(
                               child: Text(user.name.isNotEmpty ? user.name[0].toUpperCase() : '?'),
                             ),
@@ -130,6 +135,7 @@ class _ListViewInsertionState extends State<ListViewInsertion> {
                             trailing: IconButton(
                               icon: const Icon(Icons.delete_outline, color: Colors.red),
                               onPressed: () {
+                                // Delete functionality
                                 setState(() {
                                   _userList.removeAt(index);
                                 });
