@@ -2,7 +2,8 @@ import 'package:dio/dio.dart';
 import '../models/weather_forecast.dart';
 
 class WeatherController {
-  static const String _baseUrl = 'https://localhost:7077';
+  static const String _baseUrl = 'http://10.10.3.247:5049';
+
   final Dio _dio = Dio(
     BaseOptions(
       baseUrl: _baseUrl,
