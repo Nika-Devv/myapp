@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:myapp/ui/product_view_list.dart';
+import 'package:myapp/ui/search_view_list.dart';
 import 'package:myapp/ui/weather_view.dart';
 
 void main() {
@@ -18,7 +19,8 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
       ),
       // home: const WeatherView(),
-      home: const ProductViewList(),
+      // home: const ProductViewList(),
+      home: const SearchViewList(),
     );
   }
 }
