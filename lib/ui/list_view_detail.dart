@@ -36,9 +36,7 @@ class _ListViewDetailState extends State<ListViewDetail> {
     final String phone = _phoneController.text.trim();
 
     if (name.isNotEmpty && age.isNotEmpty && phone.isNotEmpty) {
-      // Create a new UserData object with updated values
       final updatedUser = UserData(name: name, age: age, phone: phone);
-      // Return the updated user to the previous screen
       Navigator.pop(context, updatedUser);
     } else {
       ScaffoldMessenger.of(context).showSnackBar(

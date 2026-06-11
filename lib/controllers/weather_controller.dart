@@ -2,7 +2,7 @@ import 'package:dio/dio.dart';
 import '../models/weather_forecast.dart';
 
 class WeatherController {
-  static const String _baseUrl = 'http://10.10.3.247:5049';
+  static const String _baseUrl = 'http://10.10.1.149:5049';
 
   final Dio _dio = Dio(
     BaseOptions(
@@ -35,7 +35,6 @@ class WeatherController {
         'Error connecting to API: ${e.message}',
       );
     } catch (e) {
-      print(e);
       throw Exception('Unexpected error: $e');
     }
   }
