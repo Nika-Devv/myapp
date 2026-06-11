@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../controllers/weather_controller.dart';
@@ -14,6 +16,9 @@ class _WeatherViewState extends State<WeatherView> {
   final WeatherController _controller = WeatherController();
   late Future<List<WeatherForecast>> _weatherFuture;
 
+  int _currentPage = 1;
+  final int _itemsPerPage = 10;
+
   @override
   void initState() {
     super.initState();
@@ -28,6 +33,7 @@ class _WeatherViewState extends State<WeatherView> {
 
   void _refreshWeather() {
     setState(() {
+      _currentPage = 1; // Reset to first page
       _weatherFuture = _controller.fetchWeatherForecasts();
     });
   }
@@ -80,59 +86,106 @@ class _WeatherViewState extends State<WeatherView> {
             return const Center(child: Text('No weather data available.'));
           }
 
-          final forecasts = snapshot.data!;
-          return ListView.builder(
-            itemCount: forecasts.length,
-            padding: const EdgeInsets.all(16),
-            itemBuilder: (context, index) {
-              final item = forecasts[index];
-              return Card(
-                elevation: 4,
-                margin: const EdgeInsets.only(bottom: 16),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: ListTile(
-                  contentPadding: const EdgeInsets.all(16),
-                  leading: _getWeatherIcon(item.summary),
-                  title: Text(
-                    DateFormat('EEEE, MMM d').format(item.date),
-                    style: const TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 18,
-                    ),
-                  ),
-                  subtitle: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const SizedBox(height: 4),
-                      Text(
-                        item.summary ?? 'N/A',
-                        style: const TextStyle(fontSize: 16),
+          final allForecasts = snapshot.data!;
+          final totalPages = (allForecasts.length / _itemsPerPage).ceil();
+
+          // Ensure current page is within bounds
+          if (_currentPage > totalPages && totalPages > 0) {
+            _currentPage = totalPages;
+          }
+
+          final startIndex = (_currentPage - 1) * _itemsPerPage;
+          final endIndex = min(startIndex + _itemsPerPage, allForecasts.length);
+          final displayedForecasts = allForecasts.sublist(startIndex, endIndex);
+
+          return Column(
+            children: [
+              Expanded(
+                child: ListView.builder(
+                  itemCount: displayedForecasts.length,
+                  padding: const EdgeInsets.all(16),
+                  itemBuilder: (context, index) {
+                    final item = displayedForecasts[index];
+                    return Card(
+                      elevation: 4,
+                      margin: const EdgeInsets.only(bottom: 16),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
                       ),
-                    ],
-                  ),
-                  trailing: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.end,
-                    children: [
-                      Text(
-                        '${item.temperatureC}°C',
-                        style: const TextStyle(
-                          fontSize: 22,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.blueAccent,
+                      child: ListTile(
+                        contentPadding: const EdgeInsets.all(16),
+                        leading: _getWeatherIcon(item.summary),
+                        title: Text(
+                          DateFormat('EEEE, MMM d').format(item.date),
+                          style: const TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 18,
+                          ),
+                        ),
+                        subtitle: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const SizedBox(height: 4),
+                            Text(
+                              item.summary ?? 'N/A',
+                              style: const TextStyle(fontSize: 16),
+                            ),
+                          ],
+                        ),
+                        trailing: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          crossAxisAlignment: CrossAxisAlignment.end,
+                          children: [
+                            Text(
+                              '${item.temperatureC}°C',
+                              style: const TextStyle(
+                                fontSize: 22,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.blueAccent,
+                              ),
+                            ),
+                            Text(
+                              '${item.temperatureF}°F',
+                              style: TextStyle(color: Colors.grey.shade600),
+                            ),
+                          ],
                         ),
                       ),
-                      Text(
-                        '${item.temperatureF}°F',
-                        style: TextStyle(color: Colors.grey.shade600),
-                      ),
-                    ],
-                  ),
+                    );
+                  },
                 ),
-              );
-            },
+              ),
+              // Pagination controls
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 16.0),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    IconButton(
+                      onPressed: _currentPage > 1
+                          ? () => setState(() => _currentPage--)
+                          : null,
+                      icon: const Icon(Icons.chevron_left),
+                    ),
+                    const SizedBox(width: 16),
+                    Text(
+                      'Page $_currentPage of $totalPages',
+                      style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                      ),
+                    ),
+                    const SizedBox(width: 16),
+                    IconButton(
+                      onPressed: _currentPage < totalPages
+                          ? () => setState(() => _currentPage++)
+                          : null,
+                      icon: const Icon(Icons.chevron_right),
+                    ),
+                  ],
+                ),
+              ),
+            ],
           );
         },
       ),
