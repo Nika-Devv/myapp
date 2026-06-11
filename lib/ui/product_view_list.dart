@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show rootBundle;
 import '../models/product.dart';
@@ -17,6 +18,9 @@ class _ProductViewListState extends State<ProductViewList> {
   bool _isLoading = true;
   String? _errorMessage;
   final TextEditingController _searchController = TextEditingController();
+  
+  int _currentPage = 1;
+  final int _itemsPerPage = 3;
 
   @override
   void initState() {
@@ -39,6 +43,7 @@ class _ProductViewListState extends State<ProductViewList> {
             product.brand.toLowerCase().contains(query) ||
             product.description.toLowerCase().contains(query);
       }).toList();
+      _currentPage = 1; // Reset to first page on search
     });
   }
 
@@ -63,6 +68,17 @@ class _ProductViewListState extends State<ProductViewList> {
 
   @override
   Widget build(BuildContext context) {
+    int totalPages = (_filteredProducts.length / _itemsPerPage).ceil();
+    if (_currentPage > totalPages && totalPages > 0) {
+      _currentPage = totalPages;
+    }
+
+    final startIndex = (_currentPage - 1) * _itemsPerPage;
+    final endIndex = min(startIndex + _itemsPerPage, _filteredProducts.length);
+    final displayedProducts = _filteredProducts.isNotEmpty
+        ? _filteredProducts.sublist(startIndex, endIndex)
+        : <Product>[];
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Products'),
@@ -95,93 +111,129 @@ class _ProductViewListState extends State<ProductViewList> {
                     Expanded(
                       child: _filteredProducts.isEmpty
                           ? const Center(child: Text('No products found.'))
-                          : ListView.builder(
-                              itemCount: _filteredProducts.length,
-                              padding: const EdgeInsets.only(left: 16, right: 16, bottom: 16),
-                              itemBuilder: (context, index) {
-                                final product = _filteredProducts[index];
-                                return Card(
-                                  elevation: 4,
-                                  margin: const EdgeInsets.only(bottom: 16),
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(12),
-                                  ),
-                                  child: InkWell(
-                                    borderRadius: BorderRadius.circular(12),
-                                    onTap: () {
-                                      Navigator.push(
-                                        context,
-                                        MaterialPageRoute(
-                                          builder: (context) => ProductViewDetail(product: product),
+                          : Column(
+                              children: [
+                                Expanded(
+                                  child: ListView.builder(
+                                    itemCount: displayedProducts.length,
+                                    padding: const EdgeInsets.only(left: 16, right: 16, bottom: 8),
+                                    itemBuilder: (context, index) {
+                                      final product = displayedProducts[index];
+                                      return Card(
+                                        elevation: 4,
+                                        margin: const EdgeInsets.only(bottom: 16),
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.circular(12),
                                         ),
-                                      );
-                                    },
-                                    child: Padding(
-                                      padding: const EdgeInsets.all(16),
-                                      child: Row(
-                                        crossAxisAlignment: CrossAxisAlignment.start,
-                                        children: [
-                                          ClipRRect(
-                                            borderRadius: BorderRadius.circular(8),
-                                            child: Image.network(
-                                              product.thumbnail,
-                                              width: 100,
-                                              height: 100,
-                                              fit: BoxFit.cover,
-                                              errorBuilder: (context, error, stackTrace) =>
-                                                  Container(
-                                                width: 100,
-                                                height: 100,
-                                                color: Colors.grey[200],
-                                                child: const Icon(Icons.image_not_supported),
+                                        child: InkWell(
+                                          borderRadius: BorderRadius.circular(12),
+                                          onTap: () {
+                                            Navigator.push(
+                                              context,
+                                              MaterialPageRoute(
+                                                builder: (context) => ProductViewDetail(product: product),
                                               ),
-                                            ),
-                                          ),
-                                          const SizedBox(width: 16),
-                                          Expanded(
-                                            child: Column(
+                                            );
+                                          },
+                                          child: Padding(
+                                            padding: const EdgeInsets.all(16),
+                                            child: Row(
                                               crossAxisAlignment: CrossAxisAlignment.start,
                                               children: [
-                                                Text(
-                                                  product.title,
-                                                  style: const TextStyle(
-                                                    fontWeight: FontWeight.bold,
-                                                    fontSize: 18,
+                                                ClipRRect(
+                                                  borderRadius: BorderRadius.circular(8),
+                                                  child: Image.network(
+                                                    product.thumbnail,
+                                                    width: 100,
+                                                    height: 100,
+                                                    fit: BoxFit.cover,
+                                                    errorBuilder: (context, error, stackTrace) =>
+                                                        Container(
+                                                      width: 100,
+                                                      height: 100,
+                                                      color: Colors.grey[200],
+                                                      child: const Icon(Icons.image_not_supported),
+                                                    ),
                                                   ),
                                                 ),
-                                                const SizedBox(height: 4),
-                                                Text(
-                                                  product.brand.isNotEmpty ? product.brand : 'Unknown Brand',
-                                                  style: TextStyle(
-                                                    color: Colors.grey.shade700,
-                                                    fontSize: 14,
+                                                const SizedBox(width: 16),
+                                                Expanded(
+                                                  child: Column(
+                                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                                    children: [
+                                                      Text(
+                                                        product.title,
+                                                        style: const TextStyle(
+                                                          fontWeight: FontWeight.bold,
+                                                          fontSize: 18,
+                                                        ),
+                                                      ),
+                                                      const SizedBox(height: 4),
+                                                      Text(
+                                                        product.brand.isNotEmpty ? product.brand : 'Unknown Brand',
+                                                        style: TextStyle(
+                                                          color: Colors.grey.shade700,
+                                                          fontSize: 14,
+                                                        ),
+                                                      ),
+                                                      const SizedBox(height: 8),
+                                                      Text(
+                                                        '\$${product.price.toStringAsFixed(2)}',
+                                                        style: const TextStyle(
+                                                          color: Colors.blueAccent,
+                                                          fontWeight: FontWeight.bold,
+                                                          fontSize: 16,
+                                                        ),
+                                                      ),
+                                                      const SizedBox(height: 8),
+                                                      Text(
+                                                        product.description,
+                                                        maxLines: 2,
+                                                        overflow: TextOverflow.ellipsis,
+                                                        style: const TextStyle(fontSize: 14),
+                                                      ),
+                                                    ],
                                                   ),
-                                                ),
-                                                const SizedBox(height: 8),
-                                                Text(
-                                                  '\$${product.price.toStringAsFixed(2)}',
-                                                  style: const TextStyle(
-                                                    color: Colors.blueAccent,
-                                                    fontWeight: FontWeight.bold,
-                                                    fontSize: 16,
-                                                  ),
-                                                ),
-                                                const SizedBox(height: 8),
-                                                Text(
-                                                  product.description,
-                                                  maxLines: 2,
-                                                  overflow: TextOverflow.ellipsis,
-                                                  style: const TextStyle(fontSize: 14),
                                                 ),
                                               ],
                                             ),
                                           ),
-                                        ],
-                                      ),
-                                    ),
+                                        ),
+                                      );
+                                    },
                                   ),
-                                );
-                              },
+                                ),
+                                // Pagination controls
+                                Padding(
+                                  padding: const EdgeInsets.symmetric(vertical: 16.0),
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      IconButton(
+                                        onPressed: _currentPage > 1
+                                            ? () => setState(() => _currentPage--)
+                                            : null,
+                                        icon: const Icon(Icons.chevron_left),
+                                      ),
+                                      const SizedBox(width: 16),
+                                      Text(
+                                        'Page $_currentPage of $totalPages',
+                                        style: const TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 16,
+                                        ),
+                                      ),
+                                      const SizedBox(width: 16),
+                                      IconButton(
+                                        onPressed: _currentPage < totalPages
+                                            ? () => setState(() => _currentPage++)
+                                            : null,
+                                        icon: const Icon(Icons.chevron_right),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
                             ),
                     ),
                   ],
