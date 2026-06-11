@@ -20,7 +20,7 @@ class _ProductViewListState extends State<ProductViewList> {
   final TextEditingController _searchController = TextEditingController();
   
   int _currentPage = 1;
-  final int _itemsPerPage = 3;
+  final int _itemsPerPage = 5;
 
   @override
   void initState() {
