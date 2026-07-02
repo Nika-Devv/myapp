@@ -14,6 +14,7 @@ class _LoginScreenState extends State<LoginScreen> {
   final TextEditingController _usernameController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
 
+  String tokenText = "";
   @override
   void dispose() {
     _usernameController.dispose();
@@ -50,7 +51,10 @@ class _LoginScreenState extends State<LoginScreen> {
         if (response.statusCode == 200) {
           final data = jsonDecode(response.body);
           final String token = data['accessToken'] ?? '';
-          
+          setState(() {
+            tokenText = token;
+
+          });
           print('Login success! Token: $token');
           
           ScaffoldMessenger.of(context).showSnackBar(
@@ -127,6 +131,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   return null;
                 },
               ),
+              Text(tokenText),
               const SizedBox(height: 24),
               SizedBox(
                 width: double.infinity,
