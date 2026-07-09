@@ -53,6 +53,13 @@ class _LoginScreenState extends State<LoginScreen> {
           final String token = data['accessToken'] ?? '';
           setState(() {
             tokenText = token;
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content:   Text(tokenText),
+                duration: const Duration(seconds: 2),
+                behavior: SnackBarBehavior.floating, // Makes it float above content
+              ),
+            );
 
           });
           print('Login success! Token: $token');
