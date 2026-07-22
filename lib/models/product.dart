@@ -1,3 +1,104 @@
+class Product {
+  final int id;
+  final String name;
+  final String productCode;
+  final double price;
+  final double cost;
+  final double stockQuantity;
+  final String description;
+  final String status;
+
+  // DummyJSON / old fields
+  final String _title;
+  final String _brand;
+  final String _category;
+  final String _thumbnail;
+  final List<String> _images;
+  final int _stock;
+  final double _rating;
+  final String _sku;
+  final String _warrantyInformation;
+  final String _shippingInformation;
+
+  Product({
+    this.id = 0,
+    this.name = '',
+    this.productCode = '',
+    this.price = 0.0,
+    this.cost = 0.0,
+    this.stockQuantity = 0.0,
+    this.description = '',
+    this.status = '',
+    String? title,
+    String? brand,
+    String? category,
+    String? thumbnail,
+    List<String>? images,
+    int? stock,
+    double? rating,
+    String? sku,
+    String? warrantyInformation,
+    String? shippingInformation,
+  })  : _title = title ?? '',
+        _brand = brand ?? '',
+        _category = category ?? '',
+        _thumbnail = thumbnail ?? '',
+        _images = images ?? [],
+        _stock = stock ?? 0,
+        _rating = rating ?? 0.0,
+        _sku = sku ?? '',
+        _warrantyInformation = warrantyInformation ?? '',
+        _shippingInformation = shippingInformation ?? '';
+
+  // Getters that fallback gracefully
+  String get title => _title.isNotEmpty ? _title : (name.isNotEmpty ? name : 'Unknown Product');
+  String get brand => _brand.isNotEmpty ? _brand : 'Unknown Brand';
+  String get category => _category.isNotEmpty ? _category : 'Uncategorized';
+  String get thumbnail => _thumbnail.isNotEmpty ? _thumbnail : 'https://via.placeholder.com/150';
+  List<String> get images => _images.isNotEmpty ? _images : ['https://via.placeholder.com/150'];
+  int get stock => _stock > 0 ? _stock : stockQuantity.toInt();
+  double get rating => _rating;
+  String get sku => _sku.isNotEmpty ? _sku : (productCode.isNotEmpty ? productCode : 'N/A');
+  String get warrantyInformation => _warrantyInformation.isNotEmpty ? _warrantyInformation : 'No warranty';
+  String get shippingInformation => _shippingInformation.isNotEmpty ? _shippingInformation : 'Standard shipping';
+
+  factory Product.fromJson(Map<String, dynamic> json) {
+    return Product(
+      id: json['id'] ?? 0,
+      name: json['name'] ?? '',
+      productCode: json['productCode'] ?? '',
+      price: json['price']?.toDouble() ?? 0.0,
+      cost: json['cost']?.toDouble() ?? 0.0,
+      stockQuantity: json['stockQuantity']?.toDouble() ?? 0.0,
+      description: json['description'] ?? '',
+      status: json['status'] ?? '',
+      title: json['title'],
+      brand: json['brand'],
+      category: json['category'],
+      thumbnail: json['thumbnail'],
+      images: (json['images'] as List<dynamic>?)?.map((e) => e.toString()).toList(),
+      stock: json['stock'],
+      rating: json['rating']?.toDouble(),
+      sku: json['sku'],
+      warrantyInformation: json['warrantyInformation'],
+      shippingInformation: json['shippingInformation'],
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      if (id != 0) 'id': id,
+      'name': name,
+      'productCode': productCode,
+      'price': price,
+      'cost': cost,
+      'stockQuantity': stockQuantity,
+      'description': description,
+      'status': status.isNotEmpty ? status : 'ACT', // Default to ACT
+    };
+  }
+}
+
 class ProductResponse {
   final List<Product> products;
   final int total;
@@ -13,156 +114,11 @@ class ProductResponse {
 
   factory ProductResponse.fromJson(Map<String, dynamic> json) {
     return ProductResponse(
-      products: (json['products'] as List).map((i) => Product.fromJson(i)).toList(),
+      products: List<Product>.from(
+          json['products']?.map((x) => Product.fromJson(x)) ?? []),
       total: json['total'] ?? 0,
       skip: json['skip'] ?? 0,
       limit: json['limit'] ?? 0,
     );
   }
-}
-
-class Product {
-  final int id;
-  final String title;
-  final String description;
-  final String category;
-  final double price;
-  final double discountPercentage;
-  final double rating;
-  final int stock;
-  final List<String> tags;
-  final String brand;
-  final String sku;
-  final int weight;
-  final Dimensions dimensions;
-  final String warrantyInformation;
-  final String shippingInformation;
-  final String availabilityStatus;
-  final List<Review> reviews;
-  final String returnPolicy;
-  final int minimumOrderQuantity;
-  final Meta meta;
-  final List<String> images;
-  final String thumbnail;
-
-  Product({
-    required this.id,
-    required this.title,
-    required this.description,
-    required this.category,
-    required this.price,
-    required this.discountPercentage,
-    required this.rating,
-    required this.stock,
-    required this.tags,
-    required this.brand,
-    required this.sku,
-    required this.weight,
-    required this.dimensions,
-    required this.warrantyInformation,
-    required this.shippingInformation,
-    required this.availabilityStatus,
-    required this.reviews,
-    required this.returnPolicy,
-    required this.minimumOrderQuantity,
-    required this.meta,
-    required this.images,
-    required this.thumbnail,
-  });
-
-  factory Product.fromJson(Map<String, dynamic> json) {
-    return Product(
-      id: json['id'] ?? 0,
-      title: json['title'] ?? '',
-      description: json['description'] ?? '',
-      category: json['category'] ?? '',
-      price: (json['price'] as num?)?.toDouble() ?? 0.0,
-      discountPercentage: (json['discountPercentage'] as num?)?.toDouble() ?? 0.0,
-      rating: (json['rating'] as num?)?.toDouble() ?? 0.0,
-      stock: json['stock'] ?? 0,
-      tags: List<String>.from(json['tags'] ?? []),
-      brand: json['brand'] ?? '',
-      sku: json['sku'] ?? '',
-      weight: (json['weight'] as num?)?.toInt() ?? 0,
-      dimensions: json['dimensions'] != null ? Dimensions.fromJson(json['dimensions']) : Dimensions.empty(),
-      warrantyInformation: json['warrantyInformation'] ?? '',
-      shippingInformation: json['shippingInformation'] ?? '',
-      availabilityStatus: json['availabilityStatus'] ?? '',
-      reviews: json['reviews'] != null ? (json['reviews'] as List).map((i) => Review.fromJson(i)).toList() : [],
-      returnPolicy: json['returnPolicy'] ?? '',
-      minimumOrderQuantity: json['minimumOrderQuantity'] ?? 0,
-      meta: json['meta'] != null ? Meta.fromJson(json['meta']) : Meta.empty(),
-      images: List<String>.from(json['images'] ?? []),
-      thumbnail: json['thumbnail'] ?? '',
-    );
-  }
-}
-
-class Dimensions {
-  final double width;
-  final double height;
-  final double depth;
-
-  Dimensions({required this.width, required this.height, required this.depth});
-
-  factory Dimensions.fromJson(Map<String, dynamic> json) {
-    return Dimensions(
-      width: (json['width'] as num?)?.toDouble() ?? 0.0,
-      height: (json['height'] as num?)?.toDouble() ?? 0.0,
-      depth: (json['depth'] as num?)?.toDouble() ?? 0.0,
-    );
-  }
-
-  factory Dimensions.empty() => Dimensions(width: 0, height: 0, depth: 0);
-}
-
-class Review {
-  final int rating;
-  final String comment;
-  final String date;
-  final String reviewerName;
-  final String reviewerEmail;
-
-  Review({
-    required this.rating,
-    required this.comment,
-    required this.date,
-    required this.reviewerName,
-    required this.reviewerEmail,
-  });
-
-  factory Review.fromJson(Map<String, dynamic> json) {
-    return Review(
-      rating: json['rating'] ?? 0,
-      comment: json['comment'] ?? '',
-      date: json['date'] ?? '',
-      reviewerName: json['reviewerName'] ?? '',
-      reviewerEmail: json['reviewerEmail'] ?? '',
-    );
-  }
-}
-
-class Meta {
-  final String createdAt;
-  final String updatedAt;
-  final String barcode;
-  final String qrCode;
-
-  Meta({
-    required this.createdAt,
-    required this.updatedAt,
-    required this.barcode,
-    required this.qrCode,
-  });
-
-  factory Meta.fromJson(Map<String, dynamic> json) {
-    return Meta(
-      createdAt: json['createdAt'] ?? '',
-      updatedAt: json['updatedAt'] ?? '',
-      barcode: json['barcode'] ?? '',
-      qrCode: json['qrCode'] ?? '',
-    );
-  }
-
-  factory Meta.empty() => Meta(createdAt: '', updatedAt: '', barcode: '', qrCode: '');
 }

@@ -36,7 +36,6 @@ class _ListViewInsertionState extends State<ListViewInsertion> {
   }
 
   void _navigateToDetail(int index) async {
-    // Navigate to detail page and wait for the updated user object
     final updatedUser = await Navigator.push(
       context,
       MaterialPageRoute(
@@ -44,7 +43,6 @@ class _ListViewInsertionState extends State<ListViewInsertion> {
       ),
     );
 
-    // If we got an updated user back, refresh the list
     if (updatedUser != null && updatedUser is UserData) {
       setState(() {
         _userList[index] = updatedUser;

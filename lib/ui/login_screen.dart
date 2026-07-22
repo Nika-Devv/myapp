@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import 'dart:convert';
-import 'package:http/http.dart' as http;
+import '../controllers/auth_controller.dart';
+import 'product_screen.dart';
+
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -13,8 +14,17 @@ class _LoginScreenState extends State<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
   final TextEditingController _usernameController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
+  final AuthController _authController = AuthController();
 
   String tokenText = "";
+  @override
+  void initState() {
+    // TODO: implement initState
+    _usernameController.text = '00000000000';
+    _passwordController.text = 'Admin@1234';
+    super.initState();
+
+  }
   @override
   void dispose() {
     _usernameController.dispose();
@@ -31,62 +41,33 @@ class _LoginScreenState extends State<LoginScreen> {
       final String username = _usernameController.text;
       final String password = _passwordController.text;
 
-      // Note: If you are using an Android Emulator, change "localhost" to "10.0.2.2"
-      final String baseUrl = "http://localhost:30033";
-      final url = Uri.parse('$baseUrl/api/oauth/token');
-
       try {
-        final response = await http.post(
-          url,
-          headers: {'Content-Type': 'application/json'},
-          body: jsonEncode({
-            'phoneNumber': username,
-            'password': password,
-          }),
-        );
-
+        final String token = await _authController.login(username, password);
+        
         if (!mounted) return;
         ScaffoldMessenger.of(context).hideCurrentSnackBar();
+        
+        setState(() {
+          tokenText = token;
+        });
 
-        if (response.statusCode == 200) {
-          final data = jsonDecode(response.body);
-          final String token = data['accessToken'] ?? '';
-          setState(() {
-            tokenText = token;
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content:   Text(tokenText),
-                duration: const Duration(seconds: 2),
-                behavior: SnackBarBehavior.floating, // Makes it float above content
-              ),
-            );
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Login Success! Token received.')),
+        );
 
-          });
-          print('Login success! Token: $token');
-          
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Login Success! Token received.')),
-          );
-          
-          // TODO: Save the token (e.g., using shared_preferences) and navigate to the home screen
-        } else {
-          String errorMsg = 'Login failed';
-          try {
-            final data = jsonDecode(response.body);
-            if (data['message'] != null) {
-              errorMsg = data['message'];
-            }
-          } catch (_) {}
-          
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Error: $errorMsg')),
+        if (mounted) {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(
+              builder: (context) => ProductScreen(token: token),
+            ),
           );
         }
       } catch (e) {
         if (!mounted) return;
         ScaffoldMessenger.of(context).hideCurrentSnackBar();
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Network error: $e')),
+          SnackBar(content: Text(e.toString())),
         );
       }
     }
